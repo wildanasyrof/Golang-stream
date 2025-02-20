@@ -4,9 +4,11 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/wildanasyrof/fiber-rest-api/api/routes"
-	"github.com/wildanasyrof/fiber-rest-api/config"
-	"github.com/wildanasyrof/fiber-rest-api/pkg/logger"
+	"github.com/wildanasyrof/golang-stream/api/routes"
+	"github.com/wildanasyrof/golang-stream/config"
+	"github.com/wildanasyrof/golang-stream/internal/module"
+	"github.com/wildanasyrof/golang-stream/pkg/logger"
+	"github.com/wildanasyrof/golang-stream/pkg/validation"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -30,9 +32,12 @@ func main() {
 	app := fx.New(
 		config.Module,
 		config.DatabaseModule,
-		FiberModule,
+		config.MigrationModule,
 		logger.Module,
 		routes.Module,
+		validation.Module,
+		module.UserModule,
+		FiberModule,
 		fx.Invoke(StartServer),
 	)
 
