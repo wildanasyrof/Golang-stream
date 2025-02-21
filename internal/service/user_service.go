@@ -11,6 +11,10 @@ import (
 
 type UserService interface {
 	RegisterUser(req dto.RegisterRequest) (*entity.User, error)
+	Login(req dto.LoginRequest) (*entity.User, error)
+	GetProfile(id uint) (*entity.User, error)
+	HashPassword(password string) (string, error)
+	VerifyPassword(hashedPassword, password string) error
 }
 
 type userService struct {
@@ -21,6 +25,49 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 	return &userService{userRepo}
 }
 
+// Get Profile
+func (u *userService) GetProfile(id uint) (*entity.User, error) {
+	user, err := u.userRepo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// Login implements UserService.
+func (u *userService) Login(req dto.LoginRequest) (*entity.User, error) {
+	user, err := u.userRepo.FindByEmail(req.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := u.VerifyPassword(user.Password, req.Password); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// HashPassword implements UserService.
+func (u *userService) HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", errors.New("failed to hash password")
+	}
+
+	return string(hashedPassword), nil
+}
+
+// VerifyPassword implements UserService.
+func (u *userService) VerifyPassword(hashedPassword string, password string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
+		return errors.New("invalid email or password")
+	}
+
+	return nil
+}
+
 func (u *userService) RegisterUser(req dto.RegisterRequest) (*entity.User, error) {
 	// Check if user already exists
 	existingUser, _ := u.userRepo.FindByEmail(req.Email)
@@ -29,9 +76,9 @@ func (u *userService) RegisterUser(req dto.RegisterRequest) (*entity.User, error
 	}
 
 	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	hashedPassword, err := u.HashPassword(req.Password)
 	if err != nil {
-		return nil, errors.New("failed to hash password")
+		return nil, err
 	}
 
 	// Create user entity

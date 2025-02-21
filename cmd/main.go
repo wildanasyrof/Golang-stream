@@ -7,6 +7,7 @@ import (
 	"github.com/wildanasyrof/golang-stream/api/routes"
 	"github.com/wildanasyrof/golang-stream/config"
 	"github.com/wildanasyrof/golang-stream/internal/module"
+	"github.com/wildanasyrof/golang-stream/pkg/auth"
 	"github.com/wildanasyrof/golang-stream/pkg/logger"
 	"github.com/wildanasyrof/golang-stream/pkg/validation"
 	"go.uber.org/fx"
@@ -34,6 +35,7 @@ func main() {
 		config.DatabaseModule,
 		config.MigrationModule,
 		logger.Module,
+		auth.Module,
 		routes.Module,
 		validation.Module,
 		module.UserModule,
