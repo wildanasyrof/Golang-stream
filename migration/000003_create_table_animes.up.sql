@@ -1,0 +1,13 @@
+CREATE TABLE animes (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    alt_titles VARCHAR(255),
+    chapters VARCHAR(50),
+    studio VARCHAR(255),
+    year VARCHAR(20),
+    rating DECIMAL(3,1),
+    synopsis TEXT,
+    image_source VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
