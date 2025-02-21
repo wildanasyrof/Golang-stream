@@ -9,6 +9,7 @@ import (
 type CategoryService interface {
 	CreateCategory(req dto.CreateCategoryRequest) (*entity.Category, error)
 	GetAllCategories() ([]entity.Category, error)
+	Destroy(id uint) (*entity.Category, error)
 }
 
 type categoryService struct {
@@ -35,4 +36,18 @@ func (c *categoryService) CreateCategory(req dto.CreateCategoryRequest) (*entity
 // GetAllCategories implements CategoryService.
 func (c *categoryService) GetAllCategories() ([]entity.Category, error) {
 	return c.categoryRepo.GetAll()
+}
+
+// Destroy implements CategoryService.
+func (c *categoryService) Destroy(id uint) (*entity.Category, error) {
+	category, err := c.categoryRepo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := c.categoryRepo.Destroy(id); err != nil {
+		return nil, err
+	}
+
+	return category, nil
 }

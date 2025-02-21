@@ -8,6 +8,8 @@ import (
 type CategoryRepository interface {
 	Create(category *entity.Category) error
 	GetAll() ([]entity.Category, error)
+	FindByID(id uint) (*entity.Category, error)
+	Destroy(id uint) error
 }
 
 type categoryRepository struct {
@@ -30,4 +32,18 @@ func (c *categoryRepository) GetAll() ([]entity.Category, error) {
 		return nil, err
 	}
 	return categories, nil
+}
+
+// FindByID implements CategoryRepository.
+func (c *categoryRepository) FindByID(id uint) (*entity.Category, error) {
+	var category entity.Category
+	if err := c.db.First(&category, id).Error; err != nil {
+		return nil, err
+	}
+	return &category, nil
+}
+
+// Destroy implements CategoryRepository.
+func (c *categoryRepository) Destroy(id uint) error {
+	return c.db.Delete(&entity.Category{}, id).Error
 }

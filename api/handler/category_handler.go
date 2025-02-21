@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/wildanasyrof/golang-stream/internal/dto"
 	"github.com/wildanasyrof/golang-stream/internal/service"
@@ -41,4 +43,20 @@ func (h *CategoryHandler) GetAll(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, "Succes get All Categories", categories)
+}
+
+func (h *CategoryHandler) Destroy(c *fiber.Ctx) error {
+	catId := c.Params("id")
+	id, err := strconv.Atoi(catId)
+	if err != nil {
+		h.logger.Warn("Invalid category ID:", id)
+		return response.Error(c, fiber.StatusBadRequest, "Validation Error", "Invalid category ID")
+	}
+
+	category, err := h.CategoryService.Destroy(uint(id))
+	if err != nil {
+		return response.Error(c, fiber.StatusNotFound, "Failed delete Category!", err.Error())
+	}
+
+	return response.Success(c, "Category deleted successfully", category)
 }

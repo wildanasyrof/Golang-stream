@@ -36,6 +36,7 @@ func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth
 	// Admin-Only Category Routes
 	adminCategoryRoutes := categoryRoutes.Group("/", middleware.AuthMiddleware(authService, "ADMIN"))
 	adminCategoryRoutes.Post("/", categoryHandler.Create)
+	adminCategoryRoutes.Delete("/:id", categoryHandler.Destroy)
 }
 
 // Fx Module for Routes
