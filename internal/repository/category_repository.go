@@ -9,6 +9,7 @@ type CategoryRepository interface {
 	Create(category *entity.Category) error
 	GetAll() ([]entity.Category, error)
 	FindByID(id uint) (*entity.Category, error)
+	FindByName(name string) (*entity.Category, error)
 	Destroy(id uint) error
 }
 
@@ -38,6 +39,14 @@ func (c *categoryRepository) GetAll() ([]entity.Category, error) {
 func (c *categoryRepository) FindByID(id uint) (*entity.Category, error) {
 	var category entity.Category
 	if err := c.db.First(&category, id).Error; err != nil {
+		return nil, err
+	}
+	return &category, nil
+}
+
+func (r *categoryRepository) FindByName(name string) (*entity.Category, error) {
+	var category entity.Category
+	if err := r.db.Where("name = ?", name).First(&category).Error; err != nil {
 		return nil, err
 	}
 	return &category, nil

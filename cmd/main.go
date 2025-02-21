@@ -40,6 +40,7 @@ func main() {
 		validation.Module,
 		module.UserModule,
 		module.CategoryModule,
+		module.AnimeModule,
 		FiberModule,
 		fx.Invoke(StartServer),
 	)

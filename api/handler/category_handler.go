@@ -55,7 +55,7 @@ func (h *CategoryHandler) Destroy(c *fiber.Ctx) error {
 
 	category, err := h.CategoryService.Destroy(uint(id))
 	if err != nil {
-		return response.Error(c, fiber.StatusNotFound, "Failed delete Category!", err.Error())
+		return response.Error(c, fiber.StatusNotFound, "Failed to delete Category", err.Error())
 	}
 
 	return response.Success(c, "Category deleted successfully", category)

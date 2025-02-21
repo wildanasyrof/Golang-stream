@@ -10,7 +10,7 @@ import (
 )
 
 // RegisterRoutes sets up all API routes
-func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth.AuthService, userHandler *handler.UserHandler, categoryHandler *handler.CategoryHandler) {
+func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth.AuthService, userHandler *handler.UserHandler, categoryHandler *handler.CategoryHandler, animeHandler *handler.AnimeHandler) {
 	// Global Middleware
 	app.Use(middleware.LoggerMiddleware(logger))
 
@@ -33,10 +33,16 @@ func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth
 	categoryRoutes := app.Group("/category")
 	categoryRoutes.Get("/", categoryHandler.GetAll) // Public
 
+	animeRoutes := app.Group("/anime")
+	animeRoutes.Get("/", animeHandler.GetAll)
+
 	// Admin-Only Category Routes
 	adminCategoryRoutes := categoryRoutes.Group("/", middleware.AuthMiddleware(authService, "ADMIN"))
 	adminCategoryRoutes.Post("/", categoryHandler.Create)
 	adminCategoryRoutes.Delete("/:id", categoryHandler.Destroy)
+
+	adminAnimeRoutes := animeRoutes.Group("/", middleware.AuthMiddleware(authService, "ADMIN"))
+	adminAnimeRoutes.Post("/", animeHandler.Create)
 }
 
 // Fx Module for Routes

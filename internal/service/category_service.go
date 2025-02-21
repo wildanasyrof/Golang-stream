@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/wildanasyrof/golang-stream/internal/dto"
 	"github.com/wildanasyrof/golang-stream/internal/entity"
 	"github.com/wildanasyrof/golang-stream/internal/repository"
@@ -42,7 +44,7 @@ func (c *categoryService) GetAllCategories() ([]entity.Category, error) {
 func (c *categoryService) Destroy(id uint) (*entity.Category, error) {
 	category, err := c.categoryRepo.FindByID(id)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("category not found")
 	}
 
 	if err := c.categoryRepo.Destroy(id); err != nil {
