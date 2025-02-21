@@ -35,6 +35,7 @@ func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth
 
 	animeRoutes := app.Group("/anime")
 	animeRoutes.Get("/", animeHandler.GetAll)
+	animeRoutes.Get("/:id", animeHandler.GetByID)
 
 	// Admin-Only Category Routes
 	adminCategoryRoutes := categoryRoutes.Group("/", middleware.AuthMiddleware(authService, "ADMIN"))

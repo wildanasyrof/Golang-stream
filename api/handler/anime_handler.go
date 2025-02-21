@@ -72,6 +72,23 @@ func (h *AnimeHandler) GetAll(c *fiber.Ctx) error {
 	})
 }
 
+func (h *AnimeHandler) GetByID(c *fiber.Ctx) error {
+	animeId := c.Params("id")
+	id, err := strconv.Atoi(animeId)
+	if err != nil {
+		h.logger.Warn("Invalid Anime ID:", id)
+		return response.Error(c, fiber.StatusBadRequest, "Validation Error", "Invalid Anime ID")
+	}
+
+	anime, err := h.animeService.GetAnimeByID(uint(id))
+	if err != nil {
+		h.logger.Error("Get anime by ID failed: ", err)
+		return response.Error(c, fiber.StatusNotFound, "Get Anime Failed", err.Error())
+	}
+
+	return response.Success(c, "Success get anime by ID", anime)
+}
+
 func (h *AnimeHandler) Delete(c *fiber.Ctx) error {
 	animeId := c.Params("id")
 	id, err := strconv.Atoi(animeId)
