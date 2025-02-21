@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/wildanasyrof/golang-stream/internal/dto"
 	"github.com/wildanasyrof/golang-stream/internal/service"
@@ -68,4 +70,21 @@ func (h *AnimeHandler) GetAll(c *fiber.Ctx) error {
 		"limit": limit,
 		"data":  animes,
 	})
+}
+
+func (h *AnimeHandler) Delete(c *fiber.Ctx) error {
+	animeId := c.Params("id")
+	id, err := strconv.Atoi(animeId)
+	if err != nil {
+		h.logger.Warn("Invalid Anime ID:", id)
+		return response.Error(c, fiber.StatusBadRequest, "Validation Error", "Invalid Anime ID")
+	}
+
+	anime, err := h.animeService.DeleteAnime(uint(id))
+	if err != nil {
+		h.logger.Error("Delete anime failed: ", err)
+		return response.Error(c, fiber.StatusNotFound, "Delete Anime Failed", err.Error())
+	}
+
+	return response.Success(c, "Anime deleted successfully", anime)
 }

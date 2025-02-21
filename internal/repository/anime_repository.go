@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"errors"
-
 	"github.com/wildanasyrof/golang-stream/internal/entity"
 	"gorm.io/gorm"
 )
@@ -69,9 +67,8 @@ func (r *animeRepository) GetAllAnime(limit, offset int, filters map[string]stri
 // Find anime by ID with categories
 func (r *animeRepository) FindByID(id uint) (*entity.Anime, error) {
 	var anime entity.Anime
-	err := r.db.Preload("Categories").First(&anime, id).Error
-	if err != nil {
-		return nil, errors.New("anime not found")
+	if err := r.db.Preload("Categories").First(&anime, id).Error; err != nil {
+		return nil, err
 	}
 	return &anime, nil
 }
@@ -83,9 +80,5 @@ func (r *animeRepository) Update(anime *entity.Anime) error {
 
 // Delete anime by ID
 func (r *animeRepository) Delete(id uint) error {
-	result := r.db.Delete(&entity.Anime{}, id)
-	if result.RowsAffected == 0 {
-		return errors.New("anime not found")
-	}
-	return result.Error
+	return r.db.Delete(&entity.Anime{}, id).Error
 }

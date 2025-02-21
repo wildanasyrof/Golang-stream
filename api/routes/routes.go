@@ -43,6 +43,7 @@ func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth
 
 	adminAnimeRoutes := animeRoutes.Group("/", middleware.AuthMiddleware(authService, "ADMIN"))
 	adminAnimeRoutes.Post("/", animeHandler.Create)
+	adminAnimeRoutes.Delete("/:id", animeHandler.Delete)
 }
 
 // Fx Module for Routes

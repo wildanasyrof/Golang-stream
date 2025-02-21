@@ -13,7 +13,7 @@ type AnimeService interface {
 	GetAllAnime(limit, page int, filters map[string]string) ([]entity.Anime, int64, error)
 	GetAnimeByID(id uint) (*entity.Anime, error)
 	UpdateAnime(id uint, req dto.UpdateAnimeRequest) (*entity.Anime, error)
-	DeleteAnime(id uint) error
+	DeleteAnime(id uint) (*entity.Anime, error)
 }
 
 type animeService struct {
@@ -128,6 +128,15 @@ func (s *animeService) UpdateAnime(id uint, req dto.UpdateAnimeRequest) (*entity
 }
 
 // Delete anime by ID
-func (s *animeService) DeleteAnime(id uint) error {
-	return s.animeRepo.Delete(id)
+func (s *animeService) DeleteAnime(id uint) (*entity.Anime, error) {
+	anime, err := s.animeRepo.FindByID(id)
+	if err != nil {
+		return nil, errors.New("anime not found")
+	}
+
+	if err := s.animeRepo.Delete(id); err != nil {
+		return nil, err
+	}
+
+	return anime, nil
 }
