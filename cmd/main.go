@@ -39,6 +39,7 @@ func main() {
 		routes.Module,
 		validation.Module,
 		module.UserModule,
+		module.CategoryModule,
 		FiberModule,
 		fx.Invoke(StartServer),
 	)

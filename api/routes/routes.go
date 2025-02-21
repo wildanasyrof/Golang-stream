@@ -10,7 +10,7 @@ import (
 )
 
 // RegisterRoutes sets up all routes
-func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, auth *auth.AuthService, userHandler *handler.UserHandler) {
+func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, auth *auth.AuthService, userHandler *handler.UserHandler, categoryHandler *handler.CategoryHandler) {
 	app.Use(middleware.LoggerMiddleware(logger))
 
 	app.Get("/", func(c *fiber.Ctx) error {
@@ -21,9 +21,13 @@ func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, auth *auth.AuthSe
 	app.Post("/login", userHandler.Login)
 
 	userRoutes := app.Group("/user")
-	userRoutes.Use(middleware.AuthMiddleware(logger, auth))
+	userRoutes.Use(middleware.AuthMiddleware(auth))
 	userRoutes.Get("/", userHandler.GetProfile)
 	userRoutes.Put("/", userHandler.UpdateProfile)
+
+	categoryRoutes := app.Group("/category")
+	categoryRoutes.Use(middleware.AuthMiddleware(auth, "ADMIN"))
+	categoryRoutes.Post("/", categoryHandler.Create)
 }
 
 // Fx Module for Routes

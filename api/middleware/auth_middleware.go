@@ -1,46 +1,53 @@
 package middleware
 
 import (
-	"strings"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/wildanasyrof/golang-stream/pkg/auth"
 	"github.com/wildanasyrof/golang-stream/pkg/response"
-	"go.uber.org/zap"
 )
 
 // AuthMiddleware protects routes with JWT authentication
-func AuthMiddleware(logger *zap.SugaredLogger, auth *auth.AuthService) fiber.Handler {
+func AuthMiddleware(authService *auth.AuthService, allowedRoles ...string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		authHeader := c.Get("Authorization")
-
-		// Check if the token exists
-		if authHeader == "" {
-			logger.Warn("Missing Authorization header")
-			return response.Error(c, fiber.StatusUnauthorized, "Unauthorized")
+		// Get token from Authorization header
+		tokenString := c.Get("Authorization")
+		if tokenString == "" {
+			return response.Error(c, fiber.StatusUnauthorized, "Unauthorized", "Missing Authorization header")
 		}
 
-		// Extract token from "Bearer <token>"
-		tokenParts := strings.Split(authHeader, " ")
-		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-			logger.Warn("Invalid Authorization header format")
-			return response.Error(c, fiber.StatusUnauthorized, "Invalid token format")
+		// Remove "Bearer " prefix if present
+		if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+			tokenString = tokenString[7:]
 		}
 
-		tokenString := tokenParts[1]
-
-		// Parse and validate JWT using auth package
-		claims, err := auth.ValidateToken(tokenString)
+		// Validate token
+		claims, err := authService.ValidateToken(tokenString)
 		if err != nil {
-			logger.Warn("Invalid or expired token")
-			return response.Error(c, fiber.StatusUnauthorized, "Invalid or expired token")
+			return response.Error(c, fiber.StatusUnauthorized, "Unauthorized", "Invalid or expired token")
 		}
 
-		// Attach user ID and role to the request context
+		// Extract role from claims
+		role, ok := claims["role"].(string)
+		if !ok {
+			return response.Error(c, fiber.StatusForbidden, "Unauthorized", "No role found")
+		}
+
 		c.Locals("userID", claims["user_id"])
 		c.Locals("role", claims["role"])
 
-		logger.Info("Authenticated request", "userID", claims["user_id"])
-		return c.Next()
+		// If no specific roles are required, allow all authenticated users
+		if len(allowedRoles) == 0 {
+			return c.Next()
+		}
+
+		// Check if user has an allowed role
+		for _, allowedRole := range allowedRoles {
+			if role == allowedRole {
+				return c.Next() // Proceed to the next handler
+			}
+		}
+
+		// If role is not allowed, return forbidden
+		return response.Error(c, fiber.StatusForbidden, "Unauthorized", "Forbidden")
 	}
 }
