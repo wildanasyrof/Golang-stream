@@ -33,3 +33,12 @@ func (h *CategoryHandler) Create(c *fiber.Ctx) error {
 
 	return response.Created(c, "Category created successfully", category)
 }
+
+func (h *CategoryHandler) GetAll(c *fiber.Ctx) error {
+	categories, err := h.CategoryService.GetAllCategories()
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Failed get Categories!", err.Error())
+	}
+
+	return response.Success(c, "Succes get All Categories", categories)
+}

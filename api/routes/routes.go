@@ -9,25 +9,33 @@ import (
 	"go.uber.org/zap"
 )
 
-// RegisterRoutes sets up all routes
-func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, auth *auth.AuthService, userHandler *handler.UserHandler, categoryHandler *handler.CategoryHandler) {
+// RegisterRoutes sets up all API routes
+func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth.AuthService, userHandler *handler.UserHandler, categoryHandler *handler.CategoryHandler) {
+	// Global Middleware
 	app.Use(middleware.LoggerMiddleware(logger))
 
+	// Health Check
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("🚀 Fiber API is running with Uber Fx!")
 	})
 
-	app.Post("/register", userHandler.RegisterUser)
-	app.Post("/login", userHandler.Login)
+	// Auth Routes
+	authRoutes := app.Group("/auth")
+	authRoutes.Post("/register", userHandler.RegisterUser)
+	authRoutes.Post("/login", userHandler.Login)
 
-	userRoutes := app.Group("/user")
-	userRoutes.Use(middleware.AuthMiddleware(auth))
+	// User Routes (Requires Authentication)
+	userRoutes := app.Group("/user", middleware.AuthMiddleware(authService))
 	userRoutes.Get("/", userHandler.GetProfile)
 	userRoutes.Put("/", userHandler.UpdateProfile)
 
+	// Public Category Routes
 	categoryRoutes := app.Group("/category")
-	categoryRoutes.Use(middleware.AuthMiddleware(auth, "ADMIN"))
-	categoryRoutes.Post("/", categoryHandler.Create)
+	categoryRoutes.Get("/", categoryHandler.GetAll) // Public
+
+	// Admin-Only Category Routes
+	adminCategoryRoutes := categoryRoutes.Group("/", middleware.AuthMiddleware(authService, "ADMIN"))
+	adminCategoryRoutes.Post("/", categoryHandler.Create)
 }
 
 // Fx Module for Routes
