@@ -35,10 +35,37 @@ func (h *AnimeHandler) Create(c *fiber.Ctx) error {
 }
 
 func (h *AnimeHandler) GetAll(c *fiber.Ctx) error {
-	animes, err := h.animeService.GetAllAnime()
-	if err != nil {
-		return response.Error(c, fiber.StatusBadRequest, "Get All Anime Failed!", err.Error())
+	// Get query parameters
+	limit := c.QueryInt("limit", 10) // Default to 10 per page
+	page := c.QueryInt("page", 1)    // Default to page 1
+
+	// Extract filtering parameters
+	filters := make(map[string]string)
+	if title := c.Query("title"); title != "" {
+		filters["title"] = title
+	}
+	if year := c.Query("year"); year != "" {
+		filters["year"] = year
+	}
+	if studio := c.Query("studio"); studio != "" {
+		filters["studio"] = studio
+	}
+	if category := c.Query("category"); category != "" {
+		filters["category"] = category
 	}
 
-	return response.Success(c, "Success get all anime", animes)
+	// Fetch anime with filters & pagination
+	animes, total, err := h.animeService.GetAllAnime(limit, page, filters)
+	if err != nil {
+		h.logger.Error("Get all anime failed: ", err)
+		return response.Error(c, fiber.StatusInternalServerError, "Get All Anime Failed!", err.Error())
+	}
+
+	// Return paginated response
+	return response.Success(c, "Success get all anime", fiber.Map{
+		"total": total,
+		"page":  page,
+		"limit": limit,
+		"data":  animes,
+	})
 }

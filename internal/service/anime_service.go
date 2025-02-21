@@ -10,7 +10,7 @@ import (
 
 type AnimeService interface {
 	CreateAnime(req dto.CreateAnimeRequest) (*entity.Anime, error)
-	GetAllAnime() ([]entity.Anime, error)
+	GetAllAnime(limit, page int, filters map[string]string) ([]entity.Anime, int64, error)
 	GetAnimeByID(id uint) (*entity.Anime, error)
 	UpdateAnime(id uint, req dto.UpdateAnimeRequest) (*entity.Anime, error)
 	DeleteAnime(id uint) error
@@ -57,8 +57,16 @@ func (s *animeService) CreateAnime(req dto.CreateAnimeRequest) (*entity.Anime, e
 }
 
 // Get all anime with categories
-func (s *animeService) GetAllAnime() ([]entity.Anime, error) {
-	return s.animeRepo.FindAll()
+func (s *animeService) GetAllAnime(limit, page int, filters map[string]string) ([]entity.Anime, int64, error) {
+	// Set default limit if not provided
+	if limit <= 0 {
+		limit = 10
+	}
+
+	// Calculate offset
+	offset := (page - 1) * limit
+
+	return s.animeRepo.GetAllAnime(limit, offset, filters)
 }
 
 // Get anime by ID
