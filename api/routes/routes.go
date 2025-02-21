@@ -23,6 +23,7 @@ func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, auth *auth.AuthSe
 	userRoutes := app.Group("/user")
 	userRoutes.Use(middleware.AuthMiddleware(logger, auth))
 	userRoutes.Get("/", userHandler.GetProfile)
+	userRoutes.Put("/", userHandler.UpdateProfile)
 }
 
 // Fx Module for Routes

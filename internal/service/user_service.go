@@ -15,6 +15,7 @@ type UserService interface {
 	GetProfile(id uint) (*entity.User, error)
 	HashPassword(password string) (string, error)
 	VerifyPassword(hashedPassword, password string) error
+	UpdateUser(userId uint, req dto.UpdateUserRequest) (*entity.User, error)
 }
 
 type userService struct {
@@ -23,6 +24,46 @@ type userService struct {
 
 func NewUserService(userRepo repository.UserRepository) UserService {
 	return &userService{userRepo}
+}
+
+// UpdateUser implements UserService.
+func (u *userService) UpdateUser(userId uint, req dto.UpdateUserRequest) (*entity.User, error) {
+	user, err := u.userRepo.FindByID(userId)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	// Update fields if provided
+	if req.Username != "" {
+		user.Username = req.Username
+	}
+	if req.Email != "" {
+		user.Email = req.Email
+	}
+	if req.NewPassword != "" && req.LastPassword != "" {
+
+		if err := u.VerifyPassword(user.Password, req.LastPassword); err != nil {
+			return nil, errors.New("invalid last password")
+		}
+
+		// Hash password
+		hashedPassword, err := u.HashPassword(req.NewPassword)
+		if err != nil {
+			return nil, err
+		}
+
+		user.Password = string(hashedPassword)
+	}
+	if req.ProfileImg != "" {
+		user.ProfileImg = req.ProfileImg
+	}
+
+	err = u.userRepo.Update(user)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 // Get Profile

@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/wildanasyrof/golang-stream/internal/entity"
 	"gorm.io/gorm"
 )
@@ -9,6 +11,7 @@ type UserRepository interface {
 	Create(user *entity.User) error
 	FindByEmail(email string) (*entity.User, error)
 	FindByID(id uint) (*entity.User, error)
+	Update(user *entity.User) error
 }
 
 type userRepository struct {
@@ -17,6 +20,17 @@ type userRepository struct {
 
 func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{db}
+}
+
+func (r *userRepository) Update(user *entity.User) error {
+	result := r.db.Save(user)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return errors.New("no user updated")
+	}
+	return nil
 }
 
 // FindByID implements UserRepository.

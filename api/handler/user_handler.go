@@ -71,3 +71,19 @@ func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
 
 	return response.Success(c, "Succes get user data", user)
 }
+
+func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
+	userID := uint(c.Locals("userID").(float64))
+	var req dto.UpdateUserRequest
+
+	if err := h.validation.ValidateBody(c, &req); err != nil {
+		return response.Error(c, fiber.StatusUnprocessableEntity, "Validation error", err)
+	}
+
+	user, err := h.userService.UpdateUser(userID, req)
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Update failed", err.Error())
+	}
+
+	return response.Success(c, "Update success", user)
+}

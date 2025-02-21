@@ -47,7 +47,6 @@ func (v *validatorImpl) ValidateBody(c *fiber.Ctx, input interface{}) []map[stri
 		return validationErrors
 	}
 
-	v.logger.Debug("✅ Validation passed!")
 	return nil
 }
 
