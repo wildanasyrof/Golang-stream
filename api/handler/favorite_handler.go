@@ -36,3 +36,21 @@ func (h *FavoriteHandler) Create(c *fiber.Ctx) error {
 
 	return response.Success(c, "Success add anime to favorite", nil)
 }
+
+func (h *FavoriteHandler) GetAll(c *fiber.Ctx) error {
+	userID := uint(c.Locals("userID").(float64))
+
+	limit := c.QueryInt("limit", 10)  // Default limit = 10
+	offset := c.QueryInt("offset", 0) // Default offset = 0
+
+	favorites, total, err := h.favoriteService.GetUserFavorites(userID, limit, offset)
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Failed to get Favorites", err.Error())
+	}
+
+	return response.Success(c, "Success get Favorites", fiber.Map{
+		"total":     total,
+		"page":      offset + 1,
+		"favorites": favorites,
+	})
+}

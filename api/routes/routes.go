@@ -31,6 +31,7 @@ func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth
 
 	favoriteRoutes := userRoutes.Group("/favorite")
 	favoriteRoutes.Post("/", favoriteHandler.Create)
+	favoriteRoutes.Get("/", favoriteHandler.GetAll)
 
 	// Public Category Routes
 	categoryRoutes := app.Group("/category")

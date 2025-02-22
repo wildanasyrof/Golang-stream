@@ -41,7 +41,6 @@ func (r *favoriteRepository) IsFavorited(userID, animeID uint) (bool, error) {
 
 // GetUserFavorites retrieves all favorite animes of a user with pagination
 func (r *favoriteRepository) GetUserFavorites(userID uint, limit, offset int) ([]entity.Favorite, int64, error) {
-	var favorites []entity.Favorite
 	var total int64
 
 	query := r.db.Model(&entity.Favorite{}).Where("user_id = ?", userID).Count(&total)
@@ -50,10 +49,11 @@ func (r *favoriteRepository) GetUserFavorites(userID uint, limit, offset int) ([
 		query = query.Limit(limit).Offset(offset)
 	}
 
-	err := query.Preload("Anime").Find(&favorites).Error
+	var results []entity.Favorite
+	err := query.Preload("Anime.Categories").Preload("Anime.Episodes").Find(&results).Error
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return favorites, total, nil
+	return results, total, nil
 }

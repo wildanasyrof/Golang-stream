@@ -3,14 +3,14 @@ package service
 import (
 	"errors"
 
-	"github.com/wildanasyrof/golang-stream/internal/entity"
+	"github.com/wildanasyrof/golang-stream/internal/dto"
 	"github.com/wildanasyrof/golang-stream/internal/repository"
 )
 
 type FavoriteService interface {
 	AddFavorite(userID, animeID uint) error
 	RemoveFavorite(userID, animeID uint) error
-	GetUserFavorites(userID uint, limit, offset int) ([]entity.Favorite, int64, error)
+	GetUserFavorites(userID uint, limit, offset int) ([]dto.AnimeResponse, int64, error)
 }
 
 type favoriteService struct {
@@ -57,6 +57,28 @@ func (s *favoriteService) RemoveFavorite(userID, animeID uint) error {
 }
 
 // GetUserFavorites retrieves paginated favorite animes of a user
-func (s *favoriteService) GetUserFavorites(userID uint, limit, offset int) ([]entity.Favorite, int64, error) {
-	return s.favoriteRepo.GetUserFavorites(userID, limit, offset)
+func (s *favoriteService) GetUserFavorites(userID uint, limit, offset int) ([]dto.AnimeResponse, int64, error) {
+	favorites, total, err := s.favoriteRepo.GetUserFavorites(userID, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var animeList []dto.AnimeResponse
+	for _, fav := range favorites {
+		animeList = append(animeList, dto.AnimeResponse{
+			ID:           fav.Anime.ID,
+			Title:        fav.Anime.Title,
+			AltTitles:    fav.Anime.AltTitles,
+			Chapters:     fav.Anime.Chapters,
+			Studio:       fav.Anime.Studio,
+			Year:         fav.Anime.Year,
+			Rating:       fav.Anime.Rating,
+			Synopsis:     fav.Anime.Synopsis,
+			ImageSource:  fav.Anime.ImageSource,
+			EpisodeCount: len(fav.Anime.Episodes), // Use len() for episode count
+			Categories:   mapCategoriesToDTO(fav.Anime.Categories),
+		})
+	}
+
+	return animeList, total, nil
 }
