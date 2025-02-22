@@ -30,7 +30,7 @@ func (r *animeRepository) GetAllAnime(limit, offset int, filters map[string]stri
 	var animes []entity.Anime
 	var total int64
 
-	query := r.db.Model(&entity.Anime{}).Preload("Categories")
+	query := r.db.Model(&entity.Anime{}).Preload("Categories").Preload("Episodes")
 
 	// Apply Filters
 	if title, ok := filters["title"]; ok {
@@ -67,7 +67,7 @@ func (r *animeRepository) GetAllAnime(limit, offset int, filters map[string]stri
 // Find anime by ID with categories
 func (r *animeRepository) FindByID(id uint) (*entity.Anime, error) {
 	var anime entity.Anime
-	if err := r.db.Preload("Categories").First(&anime, id).Error; err != nil {
+	if err := r.db.Preload("Categories").Preload("Episodes").First(&anime, id).Error; err != nil {
 		return nil, err
 	}
 	return &anime, nil

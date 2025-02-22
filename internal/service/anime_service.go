@@ -10,7 +10,7 @@ import (
 
 type AnimeService interface {
 	CreateAnime(req dto.CreateAnimeRequest) (*entity.Anime, error)
-	GetAllAnime(limit, page int, filters map[string]string) ([]entity.Anime, int64, error)
+	GetAllAnime(limit, page int, filters map[string]string) ([]dto.AnimeResponse, int64, error)
 	GetAnimeByID(id uint) (*entity.Anime, error)
 	UpdateAnime(id uint, req dto.UpdateAnimeRequest) (*entity.Anime, error)
 	DeleteAnime(id uint) (*entity.Anime, error)
@@ -57,7 +57,7 @@ func (s *animeService) CreateAnime(req dto.CreateAnimeRequest) (*entity.Anime, e
 }
 
 // Get all anime with categories
-func (s *animeService) GetAllAnime(limit, page int, filters map[string]string) ([]entity.Anime, int64, error) {
+func (s *animeService) GetAllAnime(limit, page int, filters map[string]string) ([]dto.AnimeResponse, int64, error) {
 	// Set default limit if not provided
 	if limit <= 0 {
 		limit = 10
@@ -66,7 +66,41 @@ func (s *animeService) GetAllAnime(limit, page int, filters map[string]string) (
 	// Calculate offset
 	offset := (page - 1) * limit
 
-	return s.animeRepo.GetAllAnime(limit, offset, filters)
+	animes, total, err := s.animeRepo.GetAllAnime(limit, offset, filters)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var animeList []dto.AnimeResponse
+	for _, anime := range animes {
+		animeList = append(animeList, dto.AnimeResponse{
+			ID:           anime.ID,
+			Title:        anime.Title,
+			AltTitles:    anime.AltTitles,
+			Chapters:     anime.Chapters,
+			Studio:       anime.Studio,
+			Year:         anime.Year,
+			Rating:       anime.Rating,
+			Synopsis:     anime.Synopsis,
+			ImageSource:  anime.ImageSource,
+			EpisodeCount: len(anime.Episodes), // Use len() for episode count
+			Categories:   mapCategoriesToDTO(anime.Categories),
+		})
+	}
+
+	return animeList, total, nil
+}
+
+// Helper function to convert categories to DTO
+func mapCategoriesToDTO(categories []entity.Category) []dto.CategoryResponse {
+	var categoryDTOs []dto.CategoryResponse
+	for _, category := range categories {
+		categoryDTOs = append(categoryDTOs, dto.CategoryResponse{
+			ID:   category.ID,
+			Name: category.Name,
+		})
+	}
+	return categoryDTOs
 }
 
 // Get anime by ID

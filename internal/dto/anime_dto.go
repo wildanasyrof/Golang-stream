@@ -23,3 +23,17 @@ type UpdateAnimeRequest struct {
 	ImageSource string   `json:"image_source,omitempty"`
 	Categories  []string `json:"categories,omitempty"` // List of category names
 }
+
+type AnimeResponse struct {
+	ID           uint               `json:"id"`
+	Title        string             `json:"title"`
+	AltTitles    string             `json:"alt_titles"`
+	Chapters     string             `json:"chapters"`
+	Studio       string             `json:"studio"`
+	Year         string             `json:"year"`
+	Rating       float64            `json:"rating"`
+	Synopsis     string             `json:"synopsis"`
+	ImageSource  string             `json:"image_source"`
+	Categories   []CategoryResponse `json:"categories"`
+	EpisodeCount int                `json:"episode_count"`
+}

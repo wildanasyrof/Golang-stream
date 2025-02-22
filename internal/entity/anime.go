@@ -15,6 +15,7 @@ type Anime struct {
 	Synopsis    string     `json:"synopsis"`
 	ImageSource string     `json:"image_source"`
 	Categories  []Category `gorm:"many2many:anime_categories;" json:"categories"`
+	Episodes    []Episode  `json:"episodes"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
