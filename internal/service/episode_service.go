@@ -12,8 +12,8 @@ type EpisodeService interface {
 	CreateEpisode(animeId uint, req dto.CreateEpisodeRequest) (*entity.Episode, error)
 	GetEpisodeByID(id uint) (*entity.Episode, error)
 	GetEpisodesByAnimeID(animeID uint) ([]entity.Episode, error)
-	UpdateEpisode(id uint, req dto.UpdateEpisodeRequest) (*entity.Episode, error)
-	DeleteEpisode(id uint) (*entity.Episode, error)
+	UpdateEpisode(animeId uint, epsNumber int, req dto.UpdateEpisodeRequest) (*entity.Episode, error)
+	DeleteEpisode(animeId uint, epsNumber int) (*entity.Episode, error)
 }
 
 type episodeService struct {
@@ -55,8 +55,14 @@ func (s *episodeService) GetEpisodesByAnimeID(animeID uint) ([]entity.Episode, e
 	return s.episodeRepo.FindByAnimeID(animeID)
 }
 
-func (s *episodeService) UpdateEpisode(id uint, req dto.UpdateEpisodeRequest) (*entity.Episode, error) {
-	episode, err := s.episodeRepo.FindByID(id)
+func (s *episodeService) UpdateEpisode(animeId uint, epsNumber int, req dto.UpdateEpisodeRequest) (*entity.Episode, error) {
+	// Check if anime exists
+	anime, err := s.animeRepo.FindByID(animeId)
+	if err != nil || anime == nil {
+		return nil, errors.New("anime not found")
+	}
+
+	episode, err := s.episodeRepo.FindByEpsNumber(animeId, epsNumber)
 	if err != nil {
 		return nil, errors.New("episode not found")
 	}
@@ -79,11 +85,22 @@ func (s *episodeService) UpdateEpisode(id uint, req dto.UpdateEpisodeRequest) (*
 	return episode, nil
 }
 
-func (s *episodeService) DeleteEpisode(id uint) (*entity.Episode, error) {
-	eps, err := s.episodeRepo.FindByID(id)
+func (s *episodeService) DeleteEpisode(animeId uint, epsNumber int) (*entity.Episode, error) {
+	// Check if anime exists
+	anime, err := s.animeRepo.FindByID(animeId)
+	if err != nil || anime == nil {
+		return nil, errors.New("anime not found")
+	}
+
+	episode, err := s.episodeRepo.FindByEpsNumber(animeId, epsNumber)
 	if err != nil {
 		return nil, errors.New("episode not found")
 	}
 
-	return eps, nil
+	if err := s.episodeRepo.Delete(episode.ID); err != nil {
+		return nil, err
+
+	}
+
+	return episode, nil
 }

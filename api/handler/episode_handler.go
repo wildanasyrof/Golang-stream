@@ -42,3 +42,70 @@ func (h *EpisodeHandler) Create(c *fiber.Ctx) error {
 
 	return response.Created(c, "Episode created successfully", episode)
 }
+
+func (h *EpisodeHandler) Get(c *fiber.Ctx) error {
+	animeId := c.Params("anime_id")
+	id, err := strconv.Atoi(animeId)
+	if err != nil {
+		h.logger.Warn("Invalid Anime ID:", id)
+		return response.Error(c, fiber.StatusBadRequest, "Validation Error", "Invalid Anime ID")
+	}
+	episode, err := h.episodeService.GetEpisodesByAnimeID(uint(id))
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Failed to get Episode", err.Error())
+	}
+
+	return response.Success(c, "Success geting Episode", episode)
+}
+
+func (h *EpisodeHandler) Update(c *fiber.Ctx) error {
+	animeId := c.Params("anime_id")
+	id, err := strconv.Atoi(animeId)
+	if err != nil {
+		h.logger.Warn("Invalid Anime ID:", id)
+		return response.Error(c, fiber.StatusBadRequest, "Validation Error", "Invalid Anime ID")
+	}
+
+	epsNumber := c.Params("eps_number")
+	eNumber, err := strconv.Atoi(epsNumber)
+	if err != nil {
+		h.logger.Warn("Invalid Episode ID:", eNumber)
+		return response.Error(c, fiber.StatusBadRequest, "Validation Error", "Invalid Episode Number")
+	}
+
+	var req dto.UpdateEpisodeRequest
+
+	if err := h.validation.ValidateBody(c, &req); err != nil {
+		return response.Error(c, fiber.StatusUnprocessableEntity, "Validation error", err)
+	}
+
+	episode, err := h.episodeService.UpdateEpisode(uint(id), int(eNumber), req)
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Update Episode Failed!", err.Error())
+	}
+
+	return response.Success(c, "Episode updated successfully", episode)
+}
+
+func (h *EpisodeHandler) Delete(c *fiber.Ctx) error {
+	animeId := c.Params("anime_id")
+	id, err := strconv.Atoi(animeId)
+	if err != nil {
+		h.logger.Warn("Invalid Anime ID:", id)
+		return response.Error(c, fiber.StatusBadRequest, "Validation Error", "Invalid Anime ID")
+	}
+
+	epsNumber := c.Params("eps_number")
+	eNumber, err := strconv.Atoi(epsNumber)
+	if err != nil {
+		h.logger.Warn("Invalid Episode ID:", eNumber)
+		return response.Error(c, fiber.StatusBadRequest, "Validation Error", "Invalid Episode Number")
+	}
+
+	episode, err := h.episodeService.DeleteEpisode(uint(id), int(eNumber))
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Delete Episode Failed!", err.Error())
+	}
+
+	return response.Success(c, "Episode deleted successfully", episode)
+}

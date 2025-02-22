@@ -1,7 +1,7 @@
 CREATE TABLE episodes (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     anime_id INT UNSIGNED NOT NULL,
-    episode_number INT NOT NULL,
+    episode_number INT UNIQUE NOT NULL,
     title VARCHAR(255) NOT NULL,
     video_url TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

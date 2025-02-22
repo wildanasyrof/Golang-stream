@@ -7,6 +7,7 @@ import (
 
 type EpisodeRepository interface {
 	Create(episode *entity.Episode) error
+	FindByEpsNumber(animeId uint, epsNumber int) (*entity.Episode, error)
 	FindByID(id uint) (*entity.Episode, error)
 	FindByAnimeID(animeID uint) ([]entity.Episode, error)
 	Update(episode *entity.Episode) error
@@ -23,6 +24,16 @@ func NewEpisodeRepository(db *gorm.DB) EpisodeRepository {
 
 func (r *episodeRepository) Create(episode *entity.Episode) error {
 	return r.db.Create(episode).Error
+}
+
+// FindByEpsNumber implements EpisodeRepository.
+func (r *episodeRepository) FindByEpsNumber(animeId uint, epsNumber int) (*entity.Episode, error) {
+	var episode entity.Episode
+	err := r.db.Where(&entity.Episode{AnimeID: animeId, EpisodeNumber: epsNumber}).First(&episode).Error
+	if err != nil {
+		return nil, err
+	}
+	return &episode, nil
 }
 
 func (r *episodeRepository) FindByID(id uint) (*entity.Episode, error) {
