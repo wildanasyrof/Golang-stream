@@ -10,7 +10,7 @@ import (
 )
 
 // RegisterRoutes sets up all API routes
-func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth.AuthService, userHandler *handler.UserHandler, categoryHandler *handler.CategoryHandler, animeHandler *handler.AnimeHandler) {
+func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth.AuthService, userHandler *handler.UserHandler, categoryHandler *handler.CategoryHandler, animeHandler *handler.AnimeHandler, episodeHandler *handler.EpisodeHandler) {
 	// Global Middleware
 	app.Use(middleware.LoggerMiddleware(logger))
 
@@ -37,6 +37,9 @@ func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth
 	animeRoutes.Get("/", animeHandler.GetAll)
 	animeRoutes.Get("/:id", animeHandler.GetByID)
 
+	episodeRoutes := animeRoutes.Group("/:anime_id/episode")
+	// episodeRoutes.Get("/", animeHandler.GetEpisodesByAnimeID)
+
 	// Admin-Only Category Routes
 	adminCategoryRoutes := categoryRoutes.Group("/", middleware.AuthMiddleware(authService, "ADMIN"))
 	adminCategoryRoutes.Post("/", categoryHandler.Create)
@@ -44,7 +47,11 @@ func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth
 
 	adminAnimeRoutes := animeRoutes.Group("/", middleware.AuthMiddleware(authService, "ADMIN"))
 	adminAnimeRoutes.Post("/", animeHandler.Create)
+	adminAnimeRoutes.Put("/:id", animeHandler.Update)
 	adminAnimeRoutes.Delete("/:id", animeHandler.Delete)
+
+	adminEpisodeRoutes := episodeRoutes.Group("/", middleware.AuthMiddleware(authService, "ADMIN"))
+	adminEpisodeRoutes.Post("/", episodeHandler.Create)
 }
 
 // Fx Module for Routes

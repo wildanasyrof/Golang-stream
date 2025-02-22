@@ -89,6 +89,28 @@ func (h *AnimeHandler) GetByID(c *fiber.Ctx) error {
 	return response.Success(c, "Success get anime by ID", anime)
 }
 
+func (h *AnimeHandler) Update(c *fiber.Ctx) error {
+	animeId := c.Params("id")
+	id, err := strconv.Atoi(animeId)
+	if err != nil {
+		h.logger.Warn("Invalid Anime ID:", id)
+		return response.Error(c, fiber.StatusBadRequest, "Validation Error", "Invalid Anime ID")
+	}
+
+	var req dto.UpdateAnimeRequest
+	if err := h.validation.ValidateBody(c, &req); err != nil {
+		return response.Error(c, fiber.StatusUnprocessableEntity, "Validation error", err)
+	}
+
+	anime, err := h.animeService.UpdateAnime(uint(id), req)
+	if err != nil {
+		h.logger.Error("Update anime failed: ", err)
+		return response.Error(c, fiber.StatusNotFound, "Update Anime Failed", err.Error())
+	}
+
+	return response.Success(c, "Anime updated successfully", anime)
+}
+
 func (h *AnimeHandler) Delete(c *fiber.Ctx) error {
 	animeId := c.Params("id")
 	id, err := strconv.Atoi(animeId)

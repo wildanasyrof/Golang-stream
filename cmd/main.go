@@ -41,6 +41,7 @@ func main() {
 		module.UserModule,
 		module.CategoryModule,
 		module.AnimeModule,
+		module.EpisodeModule,
 		FiberModule,
 		fx.Invoke(StartServer),
 	)
