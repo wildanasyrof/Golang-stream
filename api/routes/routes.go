@@ -10,7 +10,7 @@ import (
 )
 
 // RegisterRoutes sets up all API routes
-func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth.AuthService, userHandler *handler.UserHandler, categoryHandler *handler.CategoryHandler, animeHandler *handler.AnimeHandler, episodeHandler *handler.EpisodeHandler) {
+func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth.AuthService, userHandler *handler.UserHandler, categoryHandler *handler.CategoryHandler, animeHandler *handler.AnimeHandler, episodeHandler *handler.EpisodeHandler, favoriteHandler *handler.FavoriteHandler) {
 	// Global Middleware
 	app.Use(middleware.LoggerMiddleware(logger))
 
@@ -28,6 +28,9 @@ func RegisterRoutes(app *fiber.App, logger *zap.SugaredLogger, authService *auth
 	userRoutes := app.Group("/user", middleware.AuthMiddleware(authService))
 	userRoutes.Get("/", userHandler.GetProfile)
 	userRoutes.Put("/", userHandler.UpdateProfile)
+
+	favoriteRoutes := userRoutes.Group("/favorite")
+	favoriteRoutes.Post("/", favoriteHandler.Create)
 
 	// Public Category Routes
 	categoryRoutes := app.Group("/category")
