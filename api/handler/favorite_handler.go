@@ -23,7 +23,7 @@ func NewFavoriteHandler(favoriteService service.FavoriteService, validation vali
 
 func (h *FavoriteHandler) Create(c *fiber.Ctx) error {
 	userID := uint(c.Locals("userID").(float64))
-	var req dto.AddFavoriteRequest
+	var req dto.FavoriteRequest
 
 	if err := h.validation.ValidateBody(c, &req); err != nil {
 		return response.Error(c, fiber.StatusUnprocessableEntity, "Validation error", err)
@@ -48,9 +48,26 @@ func (h *FavoriteHandler) GetAll(c *fiber.Ctx) error {
 		return response.Error(c, fiber.StatusBadRequest, "Failed to get Favorites", err.Error())
 	}
 
-	return response.Success(c, "Success get Favorites", fiber.Map{
+	return response.Success(c, "Success get User Favorites", fiber.Map{
 		"total":     total,
 		"page":      offset + 1,
 		"favorites": favorites,
 	})
+}
+
+func (h *FavoriteHandler) Delete(c *fiber.Ctx) error {
+	userID := uint(c.Locals("userID").(float64))
+
+	var req dto.FavoriteRequest
+
+	if err := h.validation.ValidateBody(c, &req); err != nil {
+		return response.Error(c, fiber.StatusUnprocessableEntity, "Validation error", err)
+	}
+
+	err := h.favoriteService.RemoveFavorite(userID, req.AnimeID)
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Failed to remove Favorite", err.Error())
+	}
+
+	return response.Success(c, "Succes remove User Favorite", nil)
 }
