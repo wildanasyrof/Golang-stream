@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/wildanasyrof/golang-stream/internal/dto"
 	"github.com/wildanasyrof/golang-stream/internal/service"
@@ -57,14 +59,15 @@ func (h *FavoriteHandler) GetAll(c *fiber.Ctx) error {
 
 func (h *FavoriteHandler) Delete(c *fiber.Ctx) error {
 	userID := uint(c.Locals("userID").(float64))
+	animeId := c.Params("anime_id")
 
-	var req dto.FavoriteRequest
-
-	if err := h.validation.ValidateBody(c, &req); err != nil {
-		return response.Error(c, fiber.StatusUnprocessableEntity, "Validation error", err)
+	id, err := strconv.Atoi(animeId)
+	if err != nil {
+		h.logger.Warn("Invalid Anime ID:", id)
+		return response.Error(c, fiber.StatusBadRequest, "Validation Error", "Invalid Anime ID")
 	}
 
-	err := h.favoriteService.RemoveFavorite(userID, req.AnimeID)
+	err = h.favoriteService.RemoveFavorite(userID, uint(id))
 	if err != nil {
 		return response.Error(c, fiber.StatusBadRequest, "Failed to remove Favorite", err.Error())
 	}
